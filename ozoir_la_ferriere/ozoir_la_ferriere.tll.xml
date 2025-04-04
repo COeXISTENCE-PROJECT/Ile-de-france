@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- generated on 2025-04-04 16:24:34 by Eclipse SUMO netconvert Version 1.19.0
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/netconvertConfiguration.xsd">
+
+    <input>
+        <sumo-net-file value="ozoir_la_ferriere/ozoir_la_ferriere.net.xml"/>
+    </input>
+
+    <output>
+        <plain-output-prefix value="ozoir_la_ferriere/ozoir_la_ferriere"/>
+    </output>
+
+    <processing>
+        <geometry.min-radius.fix.railways value="false"/>
+        <geometry.max-grade.fix value="false"/>
+        <offset.disable-normalization value="true"/>
+        <lefthand value="0"/>
+    </processing>
+
+    <tls_building>
+        <tls.ignore-internal-junction-jam value="1"/>
+    </tls_building>
+
+    <junctions>
+        <no-turnarounds value="true"/>
+        <junctions.corner-detail value="5"/>
+        <junctions.limit-turn-speed value="5.50"/>
+        <rectangular-lane-cut value="0"/>
+    </junctions>
+
+    <pedestrian>
+        <walkingareas value="0"/>
+    </pedestrian>
+
+</configuration>
+-->
+
+<tlLogics version="1.16" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/tllogic_file.xsd">
+    <tlLogic id="cluster_1724755340_459473470_5060776488" type="static" programID="0" offset="0">
+        <phase duration="27" state="rrrrrrrrrrrrrrrrrrrrrrrrrrrrgggggggGGGGGGgrrrrrrr"/>
+        <phase duration="3"  state="rrrrrrrrrrrrrrrrrrrrrrrrrrrryyyyyyyyyyyyyyrrrrrrr"/>
+        <phase duration="27" state="rrrrrrrrrrrrrrGGGggggGggggggrrrrrrrrrrrrrrGGGgggg"/>
+        <phase duration="3"  state="rrrrrrrrrrrrrryyyyyyyyyyyyyyrrrrrrrrrrrrrryyyyyyy"/>
+        <phase duration="27" state="GGGGGGgGggggggrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"/>
+        <phase duration="3"  state="yyyyyyyyyyyyyyrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrrr"/>
+    </tlLogic>
+    <tlLogic id="cluster_459459007_459459009" type="static" programID="0" offset="0">
+        <phase duration="42" state="rrrrGGggrrrrGGgg"/>
+        <phase duration="3"  state="rrrryyyyrrrryyyy"/>
+        <phase duration="1"  state="rrrrrrrrrrrrrrrr"/>
+        <phase duration="41" state="GGggrrrrGGggrrrr"/>
+        <phase duration="3"  state="yyyyrrrryyyyrrrr"/>
+    </tlLogic>
+
+    <connection from="-460416153#0" to="-129431253#4" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="0"/>
+    <connection from="-460416153#0" to="-468406214#1" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="1"/>
+    <connection from="-460416153#0" to="-160431485#1" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="2"/>
+    <connection from="-460416153#0" to="-38750165#7" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="3"/>
+    <connection from="-460416153#0" to="-518897869#6" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="4"/>
+    <connection from="-460416153#0" to="518897869#7" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="5"/>
+    <connection from="-460416153#0" to="460416153#0" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="6"/>
+    <connection from="-468462759#0" to="38748530#0" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="4"/>
+    <connection from="-468462759#0" to="-38748039#6" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="5"/>
+    <connection from="-468462759#0" to="-27568893#13" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="6"/>
+    <connection from="-468462759#0" to="220878870" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="7"/>
+    <connection from="-518897869#7" to="460416153#0" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="7"/>
+    <connection from="-518897869#7" to="-129431253#4" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="8"/>
+    <connection from="-518897869#7" to="-468406214#1" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="9"/>
+    <connection from="-518897869#7" to="-160431485#1" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="10"/>
+    <connection from="-518897869#7" to="-38750165#7" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="11"/>
+    <connection from="-518897869#7" to="-518897869#6" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="12"/>
+    <connection from="-518897869#7" to="518897869#7" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="13"/>
+    <connection from="129431253#4" to="-468406214#1" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="42"/>
+    <connection from="129431253#4" to="-160431485#1" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="43"/>
+    <connection from="129431253#4" to="-38750165#7" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="44"/>
+    <connection from="129431253#4" to="-518897869#6" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="45"/>
+    <connection from="129431253#4" to="518897869#7" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="46"/>
+    <connection from="129431253#4" to="460416153#0" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="47"/>
+    <connection from="129431253#4" to="-129431253#4" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="48"/>
+    <connection from="137208738#0" to="137208738#1" fromLane="0" toLane="0" tl="12427686583" linkIndex="0"/>
+    <connection from="137208738#1" to="137208738#2" fromLane="0" toLane="0" tl="12427686587" linkIndex="0"/>
+    <connection from="137208738#2" to="137208738#3" fromLane="0" toLane="0" tl="8887726664" linkIndex="0"/>
+    <connection from="137208738#3" to="137208738#4" fromLane="0" toLane="0" tl="12423042840" linkIndex="0"/>
+    <connection from="137208738#4" to="137208738#5" fromLane="0" toLane="0" tl="12423042841" linkIndex="0"/>
+    <connection from="137208738#5" to="137208738#6" fromLane="0" toLane="0" tl="12422827009" linkIndex="0"/>
+    <connection from="137208738#6" to="137208738#7" fromLane="0" toLane="0" tl="cluster_6169078943_6169078946" linkIndex="-1"/>
+    <connection from="160431485#1" to="-38750165#7" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="28"/>
+    <connection from="160431485#1" to="-518897869#6" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="29"/>
+    <connection from="160431485#1" to="518897869#7" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="30"/>
+    <connection from="160431485#1" to="460416153#0" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="31"/>
+    <connection from="160431485#1" to="-129431253#4" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="32"/>
+    <connection from="160431485#1" to="-468406214#1" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="33"/>
+    <connection from="160431485#1" to="-160431485#1" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="34"/>
+    <connection from="164533019" to="-38748039#6" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="0"/>
+    <connection from="164533019" to="-27568893#13" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="1"/>
+    <connection from="164533019" to="220878870" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="2"/>
+    <connection from="164533019" to="38748530#0" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="3"/>
+    <connection from="22091998#0" to="22091998#1" fromLane="0" toLane="0" tl="12410542881" linkIndex="0"/>
+    <connection from="22091998#1" to="22091998#2" fromLane="0" toLane="0" tl="1342638306" linkIndex="0"/>
+    <connection from="22091998#2" to="22091998#3" fromLane="0" toLane="0" tl="cluster_6169078943_6169078946" linkIndex="-1"/>
+    <connection from="22091998#3" to="22091998#4" fromLane="0" toLane="0" tl="12423042838" linkIndex="0"/>
+    <connection from="22091998#4" to="22091998#5" fromLane="0" toLane="0" tl="12423042837" linkIndex="0"/>
+    <connection from="22091998#5" to="22091998#6" fromLane="0" toLane="0" tl="12427686588" linkIndex="0"/>
+    <connection from="27568893#13" to="220878870" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="8"/>
+    <connection from="27568893#13" to="38748530#0" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="9"/>
+    <connection from="27568893#13" to="-38748039#6" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="10"/>
+    <connection from="27568893#13" to="-27568893#13" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="11"/>
+    <connection from="38748039#6" to="-27568893#13" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="12"/>
+    <connection from="38748039#6" to="220878870" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="13"/>
+    <connection from="38748039#6" to="38748530#0" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="14"/>
+    <connection from="38748039#6" to="-38748039#6" fromLane="0" toLane="0" tl="cluster_459459007_459459009" linkIndex="15"/>
+    <connection from="38750165#7" to="-518897869#6" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="21"/>
+    <connection from="38750165#7" to="518897869#7" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="22"/>
+    <connection from="38750165#7" to="460416153#0" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="23"/>
+    <connection from="38750165#7" to="-129431253#4" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="24"/>
+    <connection from="38750165#7" to="-468406214#1" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="25"/>
+    <connection from="38750165#7" to="-160431485#1" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="26"/>
+    <connection from="38750165#7" to="-38750165#7" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="27"/>
+    <connection from="468406214#1" to="-160431485#1" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="35"/>
+    <connection from="468406214#1" to="-38750165#7" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="36"/>
+    <connection from="468406214#1" to="-518897869#6" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="37"/>
+    <connection from="468406214#1" to="518897869#7" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="38"/>
+    <connection from="468406214#1" to="460416153#0" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="39"/>
+    <connection from="468406214#1" to="-129431253#4" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="40"/>
+    <connection from="468406214#1" to="-468406214#1" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="41"/>
+    <connection from="518897869#6" to="518897869#7" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="14"/>
+    <connection from="518897869#6" to="460416153#0" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="15"/>
+    <connection from="518897869#6" to="-129431253#4" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="16"/>
+    <connection from="518897869#6" to="-468406214#1" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="17"/>
+    <connection from="518897869#6" to="-160431485#1" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="18"/>
+    <connection from="518897869#6" to="-38750165#7" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="19"/>
+    <connection from="518897869#6" to="-518897869#6" fromLane="0" toLane="0" tl="cluster_1724755340_459473470_5060776488" linkIndex="20"/>
+</tlLogics>

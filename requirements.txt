@@ -3,3 +3,4 @@ janux
 networkx
 pandas
 Requests
+osmium
