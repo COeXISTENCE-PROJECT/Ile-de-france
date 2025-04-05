@@ -209,7 +209,7 @@ def run_with_timeout(func, timeout, *args, **kwargs):
 ######### 
     
 def route_gen_process(network, df, num_paths, timeout=10):
-    print(f"\nGenerating paths for {num_paths} paths...")
+    #print(f"\nGenerating paths for {num_paths} paths...")
     path_gen_kwargs = {
                 "number_of_paths": num_paths,
                 "random_seed": 42,

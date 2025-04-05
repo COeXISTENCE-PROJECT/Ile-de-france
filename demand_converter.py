@@ -1,4 +1,5 @@
 # %%
+import argparse
 import os
 import janux 
 import networkx as nx
@@ -10,8 +11,11 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 from utils import *
 
 if __name__ == "__main__":
-# %%
-    region_name = 'region_1'
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--region', type=str, required=True, help='Region name key (e.g., region_1)')
+    args = parser.parse_args()
+    region_name = args.region
+    
     demand_file = f'inner_trips/{region_name}_inner.csv'
 
     region_name_mapping = json.load(open("region_name_mapping.json"))
@@ -23,7 +27,7 @@ if __name__ == "__main__":
 
     PADDING = 0.001
     
-    try_up_to_num_paths = 5
+    try_up_to_num_paths = 4
 
     # %%
     source_osm = 'ile-de-france.osm.pbf'
@@ -231,22 +235,18 @@ if __name__ == "__main__":
 
     # %%
     bad_demand = set()
+    counter = 0
     
-    counter = 0
-    with ProcessPoolExecutor() as executor:
-        futures = [executor.submit(route_gen_process, network, demand_df, num_paths+1, 10) for num_paths in range(try_up_to_num_paths)]
-        for i, future in enumerate(as_completed(futures), 1):
-            counter+=1
-            print(f"Done: {counter} process(es) out of {try_up_to_num_paths}")
-            results = future.result()
-            for d in results:
-                bad_demand.add(d)
-
-    counter = 0
-    for idx, row in demand_df.iterrows():
-        if (row["origin"], row["destination"]) in bad_demand:
-            demand_df.drop(idx, inplace=True)       
-            counter += 1
+    for num_paths in range(try_up_to_num_paths):
+        print(f"\nTrying with {num_paths+1} paths...")
+        results = route_gen_process(network, demand_df, num_paths+1, 10)
+        for d in results:
+            bad_demand.add(d)
+        for idx, row in demand_df.iterrows():
+            if (row["origin"], row["destination"]) in results:
+                demand_df.drop(idx, inplace=True)       
+                counter += 1
+    
         
     bad_demand = list(bad_demand)
     print(f"\nOverall bad demands: {bad_demand}")
