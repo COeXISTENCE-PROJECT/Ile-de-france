@@ -224,7 +224,7 @@ def route_gen_process(network, df, num_paths, timeout=10):
     bad_demand = set()
     validated_demand = set()
     for idx, demand in enumerate(unique_demands):
-        print(f"\r{idx} of {len(unique_demands)}", end="")
+        print(f"{idx} of {len(unique_demands)}")
         o, d = demand
         if ((o, d) in bad_demand) or ((o, d) in validated_demand):
             continue
