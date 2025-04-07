@@ -79,6 +79,7 @@ if __name__ == "__main__":
     # %%
     osm_file = region_name + '/' + '.'.join([region_name, 'osm'])
     net_file = region_name + '/' + '.'.join([region_name, 'net', 'xml'])
+    #tmp_net_file = region_name + '/' + '.'.join(['tmp_' + region_name, 'net', 'xml'])
     rou_file = region_name + '/' + '.'.join([region_name, 'rou', 'xml'])
 
     con_file = region_name + '/' + ".".join([region_name, 'con' ,'xml'])
@@ -86,6 +87,7 @@ if __name__ == "__main__":
     nod_file = region_name + '/' + ".".join([region_name, 'nod' ,'xml'])
     tll_file = region_name + '/' + ".".join([region_name, 'tll' ,'xml'])
     typ_file = region_name + '/' + ".".join([region_name, 'typ' ,'xml'])
+    tmp_edg_file = region_name + '/' + ".".join(['tmp_' + region_name, 'edg' ,'xml'])
 
     if not os.path.exists(region_name):
         os.makedirs(region_name)
@@ -94,8 +96,13 @@ if __name__ == "__main__":
     # %%
     extract_bbox(source_osm, osm_file, min_x-PADDING, min_y-PADDING, max_x+PADDING, max_y+PADDING)
     convert_osm_to_net(osm_file, net_file)
+    #filter_passenger_lanes_and_connections(tmp_net_file, net_file)
+    #os.remove(tmp_net_file)
     convert_net_to_rou(net_file, rou_file)
     create_sumo_miscellaneous(region_name, net_file)
+    #os.rename(edg_file, tmp_edg_file)
+    filter_passenger_edges(edg_file, edg_file)
+    #os.remove(tmp_edg_file)
 
     # %% [markdown]
     # # Map demand to edges
@@ -290,7 +297,9 @@ if __name__ == "__main__":
     demand_df
 
     # %%
-    demand_df.to_csv(f"{region_name}/agents_{region_name}.csv", index=False)
+    demand_df = demand_df[["id", "origin", "destination", "start_time"]]
+    demand_df["kind"] = "Human"
+    demand_df.to_csv(f"{region_name}/agents.csv", index=False)
     print("Agents are saved.")
 
     # %%
@@ -310,10 +319,10 @@ if __name__ == "__main__":
     # %%
     filename = f"{region_name}/od_{region_name}.txt"
     with open(filename, 'w') as f:
-        f.write(f"ORIGINS:\n")
-        f.write(f"{origins}\n")
-        f.write(f"DESTINATIONS:\n")
-        f.write(f"{destinations}\n")
+        f.write("{\n")
+        f.write(f"\"origins\" : {origins},\n")
+        f.write(f"\"destinations\" : {destinations},\n")
+        f.write("}")
     print(f"OD pairs are saved to {filename}")
 
 

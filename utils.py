@@ -104,7 +104,7 @@ def convert_osm_to_net(input_file, output_file):
         "--output-file",
         output_file,
         "--geometry.remove",
-        "--junctions.join",
+        "--junctions.join=false",
         "--roundabouts.guess",
         "--tls.discard-simple",
         "--remove-edges.isolated",
@@ -118,6 +118,124 @@ def convert_osm_to_net(input_file, output_file):
     subprocess.run(net_to_osm_convert_cmd, capture_output=True, text=True)
     
 #########    
+
+import xml.etree.ElementTree as ET
+
+def filter_passenger_lanes_and_connections(input_file, output_file):
+    tree = ET.parse(input_file)
+    root = tree.getroot()
+
+    valid_edges = set()
+    referenced_nodes = set()
+
+    # === First Pass: Filter lanes and collect valid edges and referenced nodes ===
+    for edge in list(root.findall('edge')):
+        lanes = list(edge.findall('lane'))
+        for lane in lanes:
+            allow = lane.get('allow')
+            disallow = lane.get('disallow')
+
+            if allow:
+                allowed = set(allow.split())
+                if 'passenger' not in allowed:
+                    edge.remove(lane)
+            elif disallow:
+                disallowed = set(disallow.split())
+                if 'passenger' in disallowed:
+                    edge.remove(lane)
+
+        remaining_lanes = edge.findall('lane')
+        if remaining_lanes:
+            edge_id = edge.get('id')
+            valid_edges.add(edge_id)
+            referenced_nodes.add(edge.get('from'))
+            referenced_nodes.add(edge.get('to'))
+        else:
+            root.remove(edge)
+
+    # === Second Pass: Remove invalid connections ===
+    for conn in list(root.findall('connection')):
+        from_edge = conn.get('from')
+        to_edge = conn.get('to')
+        from_lane = conn.get('fromLane')
+        to_lane = conn.get('toLane')
+
+        from_lane_id = f"{from_edge}_{from_lane}" if from_lane else None
+        to_lane_id = f"{to_edge}_{to_lane}" if to_lane else None
+
+        if (from_edge not in valid_edges or to_edge not in valid_edges):
+            root.remove(conn)
+            continue
+
+    # === Third Pass: Rebuild list of all valid lanes ===
+    valid_lanes = {lane.get("id") for lane in root.findall(".//lane")}
+
+    # === Fourth Pass: Clean and validate junctions ===
+    for junction in list(root.findall('junction')):
+        j_id = junction.get('id')
+
+        # Filter incLanes
+        inc_lanes = junction.get('incLanes')
+        filtered_inc = []
+        if inc_lanes:
+            filtered_inc = [lane for lane in inc_lanes.split() if lane in valid_lanes]
+            if filtered_inc:
+                junction.set('incLanes', ' '.join(filtered_inc))
+            else:
+                junction.attrib.pop('incLanes', None)
+
+        # Filter intLanes
+        int_lanes = junction.get('intLanes')
+        filtered_int = []
+        if int_lanes:
+            filtered_int = [lane for lane in int_lanes.split() if lane in valid_lanes]
+            if filtered_int:
+                junction.set('intLanes', ' '.join(filtered_int))
+            else:
+                junction.attrib.pop('intLanes', None)
+
+        is_used_by_edges = j_id in referenced_nodes
+        has_valid_incoming = bool(filtered_inc)
+
+        if not is_used_by_edges and not has_valid_incoming:
+            root.remove(junction)
+
+    # === Fifth Pass: Remove traffic lights with missing junctions ===
+    existing_junctions = {j.get('id') for j in root.findall('junction')}
+    for tl in list(root.findall('tlLogic')):
+        if tl.get('id') not in existing_junctions:
+            root.remove(tl)
+
+    tree.write(output_file)
+
+########
+
+def filter_passenger_edges(input_file, output_file, allowed_types=None):
+    import xml.etree.ElementTree as ET
+
+    tree = ET.parse(input_file)
+    root = tree.getroot()
+
+    if allowed_types is None:
+        allowed_types = {
+            "highway.motorway",
+            "highway.trunk",
+            "highway.primary",
+            "highway.secondary",
+            "highway.tertiary",
+            "highway.residential",
+            "highway.unclassified",
+            "highway.living_street",
+        }
+
+    for edge in list(root.findall("edge")):
+        edge_type = edge.get("type")
+        if edge_type not in allowed_types:
+            root.remove(edge)
+
+    tree.write(output_file)
+    
+#########
     
 def convert_net_to_rou(input_file, output_file):
     if os.path.exists(output_file):

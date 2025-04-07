@@ -61,3 +61,4 @@ for region_name_key in region_name_mapping.keys():
     convert_osm_to_net(osm_file, net_file)
     convert_net_to_rou(net_file, rou_file)
     create_sumo_miscellaneous(region_name, net_file)
+    filter_passenger_edges(edg_file, edg_file)
