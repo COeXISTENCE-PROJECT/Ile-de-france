@@ -24,6 +24,9 @@ if __name__ == "__main__":
 
     min_start_time = 9 * 3600
     max_start_time = 10 * 3600
+    
+    pre_filtering_size = 2000
+    final_filtering_size = 1000
 
     PADDING = 0.001
     
@@ -232,6 +235,12 @@ if __name__ == "__main__":
 
     # %%
     print("\nPruning demand with JanuX...")
+    
+    if len(demand_df) > pre_filtering_size:
+        demand_df = demand_df.sample(pre_filtering_size, random_state=42)
+        demand_df.reset_index(drop=True, inplace=True)
+        demand_df["id"] = [i for i in range(len(demand_df))]
+        print(f"Sampled {pre_filtering_size} demands for pruning")
 
     # %%
     bad_demand = set()
@@ -256,6 +265,12 @@ if __name__ == "__main__":
     # Reset indices
     demand_df.reset_index(drop=True, inplace=True)
     demand_df["id"] = [i for i in range(len(demand_df))]
+    
+    if len(demand_df) > final_filtering_size:
+        demand_df = demand_df.sample(final_filtering_size, random_state=42)
+        demand_df.reset_index(drop=True, inplace=True)
+        demand_df["id"] = [i for i in range(len(demand_df))]
+        print(f"\nSampled {final_filtering_size} demands.")
 
     # %% [markdown]
     # # Turn it into our format
@@ -275,7 +290,7 @@ if __name__ == "__main__":
     demand_df
 
     # %%
-    demand_df.to_csv(f"region_name/agents_{region_name}.csv", index=False)
+    demand_df.to_csv(f"{region_name}/agents_{region_name}.csv", index=False)
     print("Agents are saved.")
 
     # %%
