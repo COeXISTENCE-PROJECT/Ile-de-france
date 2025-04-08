@@ -10,6 +10,9 @@ from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from utils import *
 
+import warnings
+warnings.filterwarnings("ignore")
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--region', type=str, required=True, help='Region name key (e.g., region_1)')
@@ -23,10 +26,7 @@ if __name__ == "__main__":
     region_name = region_name_mapping[region_name]
 
     min_start_time = 9 * 3600
-    max_start_time = 10 * 3600
-    
-    pre_filtering_size = 2000
-    final_filtering_size = 1000
+    max_start_time = 9.5 * 3600
 
     PADDING = 0.001
     
@@ -48,19 +48,6 @@ if __name__ == "__main__":
     demand_df.head()
 
     # %% [markdown]
-    # ### Filter out departure times
-
-    # %%
-    demand_df = demand_df[demand_df["departure_time"].between(min_start_time, max_start_time)]
-    demand_df["departure_time"] = demand_df["departure_time"] - min_start_time
-    demand_df["departure_time"] = demand_df["departure_time"].astype(int)
-    demand_df = demand_df.reset_index(drop=True)
-
-    print(len(demand_df))
-    print(min(demand_df["departure_time"]))
-    print(max(demand_df["departure_time"]))
-
-    # %% [markdown]
     # # Boundaries
 
     # %%
@@ -72,6 +59,18 @@ if __name__ == "__main__":
     print("max_y: ", max_y)
     print("min_x: ", min_x)
     print("max_x: ", max_x)
+    
+    # %% [markdown]
+    # ### Filter out departure times
+
+    demand_df = demand_df[demand_df["departure_time"].between(min_start_time, max_start_time)]
+    demand_df["departure_time"] = demand_df["departure_time"] - min_start_time
+    demand_df["departure_time"] = demand_df["departure_time"].astype(int)
+    demand_df = demand_df.reset_index(drop=True)
+
+    print(len(demand_df))
+    print(min(demand_df["departure_time"]))
+    print(max(demand_df["departure_time"]))
 
     # %% [markdown]
     # # Creating files
@@ -79,7 +78,6 @@ if __name__ == "__main__":
     # %%
     osm_file = region_name + '/' + '.'.join([region_name, 'osm'])
     net_file = region_name + '/' + '.'.join([region_name, 'net', 'xml'])
-    #tmp_net_file = region_name + '/' + '.'.join(['tmp_' + region_name, 'net', 'xml'])
     rou_file = region_name + '/' + '.'.join([region_name, 'rou', 'xml'])
 
     con_file = region_name + '/' + ".".join([region_name, 'con' ,'xml'])
@@ -87,7 +85,6 @@ if __name__ == "__main__":
     nod_file = region_name + '/' + ".".join([region_name, 'nod' ,'xml'])
     tll_file = region_name + '/' + ".".join([region_name, 'tll' ,'xml'])
     typ_file = region_name + '/' + ".".join([region_name, 'typ' ,'xml'])
-    tmp_edg_file = region_name + '/' + ".".join(['tmp_' + region_name, 'edg' ,'xml'])
 
     if not os.path.exists(region_name):
         os.makedirs(region_name)
@@ -96,13 +93,9 @@ if __name__ == "__main__":
     # %%
     extract_bbox(source_osm, osm_file, min_x-PADDING, min_y-PADDING, max_x+PADDING, max_y+PADDING)
     convert_osm_to_net(osm_file, net_file)
-    #filter_passenger_lanes_and_connections(tmp_net_file, net_file)
-    #os.remove(tmp_net_file)
     convert_net_to_rou(net_file, rou_file)
     create_sumo_miscellaneous(region_name, net_file)
-    #os.rename(edg_file, tmp_edg_file)
     filter_passenger_edges(edg_file, edg_file)
-    #os.remove(tmp_edg_file)
 
     # %% [markdown]
     # # Map demand to edges
@@ -241,20 +234,13 @@ if __name__ == "__main__":
     # # Prune non-route-choice-able demand using JanuX
 
     # %%
-    print("\nPruning demand with JanuX...")
-    
-    if len(demand_df) > pre_filtering_size:
-        demand_df = demand_df.sample(pre_filtering_size, random_state=42)
-        demand_df.reset_index(drop=True, inplace=True)
-        demand_df["id"] = [i for i in range(len(demand_df))]
-        print(f"Sampled {pre_filtering_size} demands for pruning")
+    print("\nPruning demand with JanuX...\n")
 
     # %%
     bad_demand = set()
     counter = 0
     
     for num_paths in range(try_up_to_num_paths):
-        print(f"\nTrying with {num_paths+1} paths...")
         results = route_gen_process(network, demand_df, num_paths+1, 10)
         for d in results:
             bad_demand.add(d)
@@ -272,12 +258,6 @@ if __name__ == "__main__":
     # Reset indices
     demand_df.reset_index(drop=True, inplace=True)
     demand_df["id"] = [i for i in range(len(demand_df))]
-    
-    if len(demand_df) > final_filtering_size:
-        demand_df = demand_df.sample(final_filtering_size, random_state=42)
-        demand_df.reset_index(drop=True, inplace=True)
-        demand_df["id"] = [i for i in range(len(demand_df))]
-        print(f"\nSampled {final_filtering_size} demands.")
 
     # %% [markdown]
     # # Turn it into our format
@@ -324,5 +304,3 @@ if __name__ == "__main__":
         f.write(f"\"destinations\" : {destinations},\n")
         f.write("}")
     print(f"OD pairs are saved to {filename}")
-
-
