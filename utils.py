@@ -35,7 +35,6 @@ class extract_bbox:
     
     def __init__(self, input_file, output_file, min_lon, min_lat, max_lon, max_lat):
         """
-        city: The name of the city you would like to export
         input_file: The input file in osm.pbf format
         output_file: The name of the output file in filename.osm format
         """

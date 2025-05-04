@@ -1,12 +1,9 @@
-# %%
 import argparse
 import os
 import janux 
 import networkx as nx
 import pandas as pd
 import json
-
-from concurrent.futures import ProcessPoolExecutor, as_completed
 
 from utils import *
 
@@ -16,70 +13,62 @@ warnings.filterwarnings("ignore")
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--region', type=str, required=True, help='Region name key (e.g., region_1)')
+    parser.add_argument('--min-start', type=int, default=9*3600, help='Minimum start time in seconds (default: 9*3600)')
+    parser.add_argument('--max-start', type=int, default=9.5*3600, help='Maximum start time in seconds (default: 9.5*3600)')
+    parser.add_argument('--num-paths', type=int, default=4, help='Number of paths to try for routing (default: 4)')
     args = parser.parse_args()
     region_name = args.region
+    min_start_time = args.min_start
+    max_start_time = args.max_start
+    try_up_to_num_paths = args.num_paths
     
     demand_file = f'inner_trips/{region_name}_inner.csv'
-
-    region_name_mapping = json.load(open("region_name_mapping.json"))
+    region_name_mapping = json.load(open("inner_trips/region_name_mapping.json"))
     print(f"------ RUNNING FOR {region_name} ({region_name_mapping[region_name]}) ------\n")
-    region_name = region_name_mapping[region_name]
-
-    min_start_time = 9 * 3600
-    max_start_time = 9.5 * 3600
-
-    PADDING = 0.001
     
-    try_up_to_num_paths = 4
-
-    # %%
+    region_name = region_name_mapping[region_name]
+    PADDING = 0.001
+    TIMEOUT = 10
+    
+    """
+    Download the Ile-de-france OSM file if it doesn't exist
+    """
     source_osm = 'ile-de-france.osm.pbf'
     data_url = "https://download.geofabrik.de/europe/france/ile-de-france-latest.osm.pbf"
     download_osm_file(data_url, source_osm)
 
-    # %% [markdown]
-    # # Read demand
-
-    # %%
+    """
+    Read demand data
+    """
     demand_df = pd.read_csv(demand_file)
-    demand_df = demand_df[["departure_time","ox","oy","dx","dy"]]
+    demand_df = demand_df[["departure_time", "ox", "oy", "dx", "dy"]]
     demand_df["dest_edge"] = None
     demand_df["origin_edge"] = None
-    demand_df.head()
 
-    # %% [markdown]
-    # # Boundaries
-
-    # %%
+    """
+    Retrieve coordinate boundaries of the demand
+    """
     min_y = min(demand_df['oy'].min(), demand_df['dy'].min())
     max_y = max(demand_df['oy'].max(), demand_df['dy'].max())
     min_x = min(demand_df['ox'].min(), demand_df['dx'].min())
     max_x = max(demand_df['ox'].max(), demand_df['dx'].max())
-    print("min_y: ", min_y)
-    print("max_y: ", max_y)
-    print("min_x: ", min_x)
-    print("max_x: ", max_x)
     
-    # %% [markdown]
-    # ### Filter out departure times
-
+    """
+    Filter out departure times according to the given time window
+    """
     demand_df = demand_df[demand_df["departure_time"].between(min_start_time, max_start_time)]
     demand_df["departure_time"] = demand_df["departure_time"] - min_start_time
     demand_df["departure_time"] = demand_df["departure_time"].astype(int)
     demand_df = demand_df.reset_index(drop=True)
+    print(f"Remaining trips after departure time filtering: {len(demand_df)}")
 
-    print(len(demand_df))
-    print(min(demand_df["departure_time"]))
-    print(max(demand_df["departure_time"]))
-
-    # %% [markdown]
-    # # Creating files
-
-    # %%
+    """
+    Creating files needed for SUMO simulation
+    """
+    # File names
     osm_file = region_name + '/' + '.'.join([region_name, 'osm'])
     net_file = region_name + '/' + '.'.join([region_name, 'net', 'xml'])
     rou_file = region_name + '/' + '.'.join([region_name, 'rou', 'xml'])
-
     con_file = region_name + '/' + ".".join([region_name, 'con' ,'xml'])
     edg_file = region_name + '/' + ".".join([region_name, 'edg' ,'xml'])
     nod_file = region_name + '/' + ".".join([region_name, 'nod' ,'xml'])
@@ -88,26 +77,22 @@ if __name__ == "__main__":
 
     if not os.path.exists(region_name):
         os.makedirs(region_name)
-
-
-    # %%
+        
     extract_bbox(source_osm, osm_file, min_x-PADDING, min_y-PADDING, max_x+PADDING, max_y+PADDING)
     convert_osm_to_net(osm_file, net_file)
     convert_net_to_rou(net_file, rou_file)
     create_sumo_miscellaneous(region_name, net_file)
-    filter_passenger_edges(edg_file, edg_file)
+    filter_passenger_edges(edg_file, edg_file) # Filter out non-passenger edges
 
-    # %% [markdown]
-    # # Map demand to edges
-
-    # %%
+    """
+    Map trips to edges in the network
+    """
+    
     node_xy = extract_nodes_from_osm(osm_file)
-
-    # %%
     nodes, edges = janux.visualizers.visualization_utils.parse_network_files(nod_file, edg_file)
-    G = janux.visualizers.visualization_utils.create_graph(nodes, edges)
+    G = janux.visualizers.visualization_utils.create_graph(nodes, edges) # Create a graph from the nodes and edges
 
-    # %%
+    # Create dictionaries for edges (used for final formatting)
     edges_od_to_id = {}
     for o, d, edge_id in edges:
         edges_od_to_id[(o, d)] = edge_id
@@ -115,7 +100,7 @@ if __name__ == "__main__":
     for o, d, edge_id in edges:
         edges_id_to_od[edge_id] = (o, d)
 
-    # %%
+    # Create a dictionary for edge coordinates, approximated as the midpoint of connected nodes
     edges_xy = {}
     for o, d in G.edges():
         try:
@@ -126,7 +111,6 @@ if __name__ == "__main__":
         except:
             continue
 
-    # %%
     # Find non-dead-end origin candidates and accessible destination candidates
     network = janux.build_digraph(con_file, edg_file, rou_file)
     origin_candidates, destination_candidates = [], []
@@ -140,10 +124,8 @@ if __name__ == "__main__":
             origin_candidates.append(node)
         if len(paths_to) > 0:
             destination_candidates.append(node)
-    print("\norigin_candidates: ", len(origin_candidates))
-    print("destination_candidates: ", len(destination_candidates))
 
-    # %%
+    # Mapping each trip to the closest edges
     for idx, row in demand_df.iterrows():
         print(f"\r{idx+1}/{len(demand_df)}", end="")
         o_xy = (row['ox'], row['oy'])
@@ -151,43 +133,29 @@ if __name__ == "__main__":
         
         # Find the closest edge to the origin from edges_xy
         origin_edge = find_nearest_edge(row['ox'], row['oy'], origin_candidates, edges_xy, edges_id_to_od)
-        #origin_edge = edges_od_to_id.get(origin_edge, None)
         dest_edge = find_nearest_edge(row['dx'], row['dy'], destination_candidates, edges_xy, edges_id_to_od)
-        #dest_edge = edges_od_to_id.get(dest_edge, None)
         
         if origin_edge is None or dest_edge is None:
             raise ValueError(f"Could not find nearest edge for origin ({row['ox']}, {row['oy']}) or destination ({row['dx']}, {row['dy']})")
         demand_df.at[idx, 'origin_edge'] = origin_edge
         demand_df.at[idx, 'dest_edge'] = dest_edge
 
-
-    # %%
-    sample_demand = demand_df.sample(5)
-
-    for idx, sample in sample_demand.iterrows():
-        print(f"Demand origin x: {sample['ox']}, y: {sample['oy']} is mapped to edge {sample['origin_edge']}")
-        print(f"Demand destination x: {sample['dx']}, y: {sample['dy']} is mapped to edge {sample['dest_edge']}")
-
-    # %%
-    sample_demand
-
-    # %% [markdown]
-    # # Filter out undesirable ones
-
-    # %%
+    """
+    Filter out undesirable trips
+    """
+    
     network = janux.build_digraph(con_file, edg_file, rou_file)
-
     demand_df.rename(columns={"departure_time": "start_time"}, inplace=True)
     demand_df.rename(columns={"origin_edge": "origin"}, inplace=True)
     demand_df.rename(columns={"dest_edge": "destination"}, inplace=True)
 
-    # %%
+    # Remove trips with inaccessible origins or destinations
     print("Removing trips with inaccessible origins or destinations...")
 
     origins, destinations = demand_df["origin"].unique(), demand_df["destination"].unique()
     bad_origins, bad_destinations = [], []
     reversed_network = network.reverse()
-
+    
     # origins with no outlinks
     for idx, origin in enumerate(origins):
         print(f"\r{idx+1}/{len(origins)}: Deleted: {len(bad_origins)}", end="")
@@ -199,7 +167,6 @@ if __name__ == "__main__":
         except:
             bad_origins.append(origin)
     
-    print("\n")
     # inaccessible destinations       
     for idx, destination in enumerate(destinations):
         print(f"\r{idx+1}/{len(destinations)}: Deleted: {len(bad_destinations)}", end="")
@@ -217,7 +184,7 @@ if __name__ == "__main__":
             
     print(f"\nDeleted {len(bad_origins)} origins and {len(bad_destinations)} destinations")
 
-    # %%
+    # Remove trips with identical origin and destination
     print("Removing trips with identical origin and destination...")
     counter = 0
     for idx, row in demand_df.iterrows():
@@ -226,43 +193,50 @@ if __name__ == "__main__":
             counter += 1
     print(f"Deleted {counter} trips with identical origin and destination")
 
-    # %%
+    # Reset indices and row IDs
     demand_df.reset_index(drop=True, inplace=True)
     demand_df["id"] = [i for i in range(len(demand_df))]
 
-    # %% [markdown]
-    # # Prune non-route-choice-able demand using JanuX
+    """
+    - We cannot generate multiple routes for some of the trips.
+    - Therefore, they are not suitable for route choice.
+    - We will remove these trips from the demand.
+    - We will use JanuX for this purpose, see: ```https://github.com/COeXISTENCE-PROJECT/JanuX```.
+    - JanuX assumes that it is always possible to find desired number of routes between any two nodes.
+    - However, this is not the case in our network.
+    
+    We will use the following approach:
+    1. For increasing number of paths, we will try to find the routes.
+    2. For each trip, we will try to find the routes.
+    3. If we cannot find the routes before a predefined timeout, we will remove the trip from the demand.
+    4. We will repeat this process for all trips.
+    """
 
-    # %%
     print("\nPruning demand with JanuX...\n")
 
-    # %%
     bad_demand = set()
     counter = 0
     
     for num_paths in range(try_up_to_num_paths):
-        results = route_gen_process(network, demand_df, num_paths+1, 10)
+        results = route_gen_process(network, demand_df, num_paths+1, TIMEOUT)
         for d in results:
             bad_demand.add(d)
         for idx, row in demand_df.iterrows():
             if (row["origin"], row["destination"]) in results:
                 demand_df.drop(idx, inplace=True)       
                 counter += 1
-    
-        
-    bad_demand = list(bad_demand)
-    print(f"\nOverall bad demands: {bad_demand}")
     print(f"Deleted {counter} trips with bad demand")
 
-    # %%
     # Reset indices
     demand_df.reset_index(drop=True, inplace=True)
     demand_df["id"] = [i for i in range(len(demand_df))]
 
-    # %% [markdown]
-    # # Turn it into our format
+    """
+    Reformat and save data for URB.
+    Following lines can be modified to save the data in a different format.
+    """
 
-    # %%
+    # Convert origin and destination names to indices
     origin_indices = {origin_name : idx for idx, origin_name in enumerate(demand_df["origin"].unique())}
     destination_indices = {destination_name : idx for idx, destination_name in enumerate(demand_df["destination"].unique())}
 
@@ -273,30 +247,22 @@ if __name__ == "__main__":
         demand_df.at[idx, "origin"] = origin_indices[row["origin"]]
         demand_df.at[idx, "destination"] = destination_indices[row["destination"]]
 
-    # %%
-    demand_df
-
-    # %%
+    # Rename columns
     demand_df = demand_df[["id", "origin", "destination", "start_time"]]
+    # Add a column for the agent kind (Human), they can mutate to AVs during the experiment.
     demand_df["kind"] = "Human"
+    # Save the demand data to a CSV file
     demand_df.to_csv(f"{region_name}/agents.csv", index=False)
     print("Agents are saved.")
 
-    # %%
-    print("Origins:")
+    # We saved trip origin and destinations by their indices.
+    # Now we need to save their edge IDs, ordered by their indices.
+    # This will be resolved by `URB` scripts appropriately.
     keys = [k for k in origin_names.keys()]
-    print(keys == sorted(keys))
     origins = [origin_names[k] for k in keys]
-    print(origins)
-
-    # %%
-    print("Destinations:")
     keys = [k for k in destination_names.keys()]
-    print(keys == sorted(keys))
     destinations = [destination_names[k] for k in keys]
-    print(destinations)
-
-    # %%
+    
     filename = f"{region_name}/od_{region_name}.txt"
     with open(filename, 'w') as f:
         f.write("{\n")
@@ -304,3 +270,6 @@ if __name__ == "__main__":
         f.write(f"\"destinations\" : {destinations},\n")
         f.write("}")
     print(f"OD pairs are saved to {filename}")
+    
+    print("Done.")
+    print("--------------------------------------------------")
