@@ -10,11 +10,11 @@ This repository is dedicated to generating input data for use with [URB](https:/
 
 ## Contents
 
-- Raw synthetic demand data ([inner_trips/](/inner_trips/)) for inner-subregional trips in Île-de-France.
+- Raw synthetic demand data ([inner_trips/](/inner_trips/)) for inner-subregional trips in Île-de-France. Also available on [Kaggle](https://www.kaggle.com/datasets/ukaszgorczyca/urb-inner-trips).
 - Script ([process_files.py](/process_files.py)) for converting this data into:
     - Network files compatible with `SUMO`.
     - Demand data compatible with `URB` and `RouteRL`.
-- Resulting converted files organized into individual network folders, also provided with network captures.
+- Resulting converted files organized into individual network folders, also provided with network captures. Also available on [Kaggle](https://www.kaggle.com/datasets/ukaszgorczyca/urb-networks).
 
 ## Usage
 
